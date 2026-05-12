@@ -259,6 +259,19 @@ function init(){
 
   // Quick mix
   $('#btn-quick-mix').addEventListener('click',quickMix);
+
+  // Shuffle Quiz
+  const btnShuffle = $('#btn-shuffle-quiz');
+  if(btnShuffle) {
+    btnShuffle.addEventListener('click', () => {
+      const list = $('#quiz-list');
+      for (let i = list.children.length; i >= 0; i--) {
+        list.appendChild(list.children[Math.random() * i | 0]);
+      }
+      // Scroll to top
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded',init);
