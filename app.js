@@ -211,9 +211,9 @@ function handleAnswer(qi,oi,qs,isRestore=false){
     let boxClass = isCorrectOpt ? 'expl-right' : 'expl-wrong';
     if(!isCorrectOpt && !isChosenOpt) boxClass = ''; // plain for unchosen wrong options
     
-    let bgStyle = isCorrectOpt ? 'background-color: #dcfce7; border-color: #bbf7d0; color: #166534;' : 
-                 (isChosenOpt ? 'background-color: #fee2e2; border-color: #fecaca; color: #991b1b;' : 
-                 'background-color: #f3f4f6; border-color: #e5e7eb; color: #4b5563;');
+    let bgStyle = isCorrectOpt ? 'background-color: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.4); color: #4ade80;' : 
+                 (isChosenOpt ? 'background-color: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #f87171;' : 
+                 'background-color: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.15); color: #d1d5db;');
                  
     let icon = isCorrectOpt ? '✔' : '✘';
     let chosenText = isChosenOpt ? '<span style="font-size:0.8em; opacity:0.8; float:right;">(Your choice)</span>' : '';
