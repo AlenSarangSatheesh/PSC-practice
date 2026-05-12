@@ -231,7 +231,7 @@ function init(){
   $('#subject-english').addEventListener('click',()=>{renderTopics('all');show('#screen-topics')});
   $('#btn-back-landing').addEventListener('click',()=>{updateLanding();show('#screen-landing')});
 
-  // Topic filters
+    // Topic filters
   $$('.filter-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       $$('.filter-btn').forEach(b=>b.classList.remove('active'));
@@ -239,6 +239,19 @@ function init(){
       renderTopics(btn.dataset.filter);
     });
   });
+
+  // Reset Progress
+  const btnReset = $('#btn-reset-progress');
+  if(btnReset) {
+    btnReset.addEventListener('click', ()=>{
+      if(confirm('Are you sure you want to reset all your progress? This cannot be undone.')){
+        localStorage.removeItem('psc_progress');
+        const activeFilter = $('.filter-btn.active');
+        renderTopics(activeFilter ? activeFilter.dataset.filter : 'all');
+        updateLanding();
+      }
+    });
+  }
 
   // Quiz back
   $('#btn-back-topics').addEventListener('click',()=>{renderTopics('all');show('#screen-topics')});
