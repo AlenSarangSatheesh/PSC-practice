@@ -30,14 +30,50 @@ const $$=s=>document.querySelectorAll(s);
 function show(id){$$('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0)}
 function getQ(id){return(window.PSC_QUESTIONS&&window.PSC_QUESTIONS[id])||[]}
 
+function getWrongReason(topic, opt, rule) {
+  if(!opt) return "Incorrect option.";
+  const o = opt.toLowerCase().trim();
+  if (topic === 'articles') {
+    if (o === 'a') return "Incorrect. 'A' is used before consonant sounds.";
+    if (o === 'an') return "Incorrect. 'An' is used before vowel sounds.";
+    if (o === 'the') return "Incorrect. 'The' is used for specific, known, or unique nouns.";
+    if (o === 'no article') return "Incorrect. The context requires an article to modify the noun.";
+  }
+  if (topic === 'spelling') return `Incorrect. '${opt}' is a misspelled variation.`;
+  if (topic === 'synonyms_antonyms' || topic === 'confusing_words') return `Incorrect. '${opt}' does not convey the required meaning here.`;
+  if (topic === 'one_word_substitutions') return `Incorrect. '${opt}' represents a different concept or definition.`;
+  if (topic === 'idioms_phrases' || topic === 'phrasal_verbs') return `Incorrect. This is not the correct phrase or its meaning does not fit.`;
+  if (topic === 'subject_verb_agreement') return `Incorrect verb form. It fails to agree with the subject in number or person.`;
+  if (topic === 'tenses') return `Incorrect tense. It does not align with the timeline or time markers in the sentence.`;
+  if (topic === 'question_tags') return `Incorrect tag. Ensure the polarity (positive/negative) and auxiliary verb match the statement.`;
+  if (topic === 'voice_change') return `Incorrect structure. The tense, subject-object swap, or past participle form is flawed.`;
+  if (topic === 'reported_speech') return `Incorrect. Pronouns, tenses, or time markers were not appropriately converted.`;
+  if (topic === 'prepositions') return `Incorrect preposition. It does not fit the spatial, temporal, or idiomatic context.`;
+  if (topic === 'degrees') return `Incorrect adjective/adverb form. Check the rules for comparative or superlative degrees.`;
+  if (topic === 'parts_of_speech') return `Incorrect. This option is not the required part of speech for the sentence structure.`;
+  if (topic === 'gerunds_infinitives') return `Incorrect. The verb or context requires either a gerund (-ing) or an infinitive (to + verb).`;
+  if (topic === 'correlatives') return `Incorrect. Correlative conjunctions must be properly paired (e.g., either...or, neither...nor).`;
+  if (topic === 'sentence_correction') return `Incorrect. This option contains a grammatical, structural, or semantic error.`;
+  
+  if (rule) return `Incorrect. It violates the core rule: ${rule.charAt(0).toLowerCase() + rule.slice(1)}`;
+  return "This option is grammatically incorrect in this context.";
+}
+
 /* --- Progress (localStorage) --- */
 function getProgress(){try{return JSON.parse(localStorage.getItem("psc_progress"))||{}}catch(e){return{}}}
 function saveProgress(p){localStorage.setItem("psc_progress",JSON.stringify(p))}
-function recordAnswer(topicId,qIdx,correct){
+function recordAnswer(topicId,qIdx,correct,oi){
+  if(topicId==='_quickmix')return;
   const p=getProgress();
-  if(!p[topicId])p[topicId]={done:0,right:0};
-  p[topicId].done++;
-  if(correct)p[topicId].right++;
+  if(!p[topicId])p[topicId]={done:0,right:0,answers:{}};
+  if(!p[topicId].answers)p[topicId].answers={};
+  
+  if(p[topicId].answers[qIdx]===undefined){
+    p[topicId].done++;
+    if(correct)p[topicId].right++;
+    p[topicId].answers[qIdx]=oi;
+  }
+  p[topicId].last=qIdx;
   saveProgress(p);
 }
 
@@ -78,12 +114,15 @@ function renderTopics(filter){
 let quizState={topicId:null,answered:{}};
 
 function openQuiz(topicId){
+  const p=getProgress();
+  const tp=p[topicId]||{};
   quizState={topicId,answered:{}};
   const t=TOPICS.find(x=>x.id===topicId);
   const qs=getQ(topicId);
   if(!qs.length){alert('No questions for this topic yet.');return;}
 
   $('#quiz-title').textContent=t.icon+' '+t.name;
+  $('#btn-reset-topic').style.display='inline-block';
   $('#score-correct').textContent='0';
   $('#score-total').textContent='0';
   $('#quiz-summary').textContent='';
@@ -120,9 +159,22 @@ function openQuiz(topicId){
   });
 
   show('#screen-quiz');
+
+  if(tp.answers){
+    Object.keys(tp.answers).forEach(qi=>{
+      handleAnswer(parseInt(qi),tp.answers[qi],qs,true);
+    });
+  }
+
+  if(tp.last!==undefined){
+    setTimeout(()=>{
+      const el=$('#q-'+tp.last);
+      if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+    },100);
+  }
 }
 
-function handleAnswer(qi,oi,qs){
+function handleAnswer(qi,oi,qs,isRestore=false){
   if(quizState.answered[qi]!==undefined)return; // already answered
   quizState.answered[qi]=oi;
 
@@ -148,12 +200,41 @@ function handleAnswer(qi,oi,qs){
   // Build detailed explanation
   const expl=$('#expl-'+qi);
   let explHtml='<div class="expl-header">'+(correct?'✅ Correct!':'❌ Incorrect')+'</div>';
-  explHtml+='<div class="expl-main">💡 '+( q.e||'')+'</div>';
-  explHtml+='<div class="expl-detail">';
-  explHtml+='<div class="expl-right"><strong>✔ '+LABELS[q.a]+'. '+q.o[q.a]+'</strong> is the correct answer.</div>';
-  if(!correct){
-    explHtml+='<div class="expl-wrong">✘ You chose <strong>'+LABELS[oi]+'. '+q.o[oi]+'</strong> — this is incorrect.</div>';
-  }
+  if(q.e) explHtml+='<div class="expl-main" style="margin-bottom:12px;">💡 '+q.e+'</div>';
+  
+  explHtml+='<div class="expl-detail" style="display:flex; flex-direction:column; gap:8px;">';
+  
+  q.o.forEach((opt, idx) => {
+    const isCorrectOpt = (idx === q.a);
+    const isChosenOpt = (idx === oi);
+    
+    let boxClass = isCorrectOpt ? 'expl-right' : 'expl-wrong';
+    if(!isCorrectOpt && !isChosenOpt) boxClass = ''; // plain for unchosen wrong options
+    
+    let bgStyle = isCorrectOpt ? 'background-color: #dcfce7; border-color: #bbf7d0; color: #166534;' : 
+                 (isChosenOpt ? 'background-color: #fee2e2; border-color: #fecaca; color: #991b1b;' : 
+                 'background-color: #f3f4f6; border-color: #e5e7eb; color: #4b5563;');
+                 
+    let icon = isCorrectOpt ? '✔' : '✘';
+    let chosenText = isChosenOpt ? '<span style="font-size:0.8em; opacity:0.8; float:right;">(Your choice)</span>' : '';
+    
+    let specificExpl = (q.eo && q.eo[idx]) ? q.eo[idx] : '';
+    if (!specificExpl) {
+        if (isCorrectOpt) specificExpl = 'This is the correct answer based on the rule above.';
+        else {
+           let qTopic = (quizState.topicId === '_quickmix') ? q._src : quizState.topicId;
+           specificExpl = getWrongReason(qTopic, opt, q.e);
+        }
+    }
+    
+    explHtml += `
+      <div class="${boxClass}" style="padding:10px; border-radius:6px; border:1px solid; ${bgStyle}">
+        <div style="margin-bottom:4px;"><strong>${icon} ${LABELS[idx]}. ${opt}</strong> ${chosenText}</div>
+        <div style="font-size:0.9em; opacity:0.9;">↳ ${specificExpl}</div>
+      </div>
+    `;
+  });
+  
   explHtml+='</div>';
   expl.innerHTML=explHtml;
   expl.classList.add('show');
@@ -163,7 +244,9 @@ function handleAnswer(qi,oi,qs){
   item.classList.add(correct?'answered-correct':'answered-wrong');
 
   // Update score
-  recordAnswer(quizState.topicId,qi,correct);
+  if(!isRestore){
+    recordAnswer(quizState.topicId,qi,correct,oi);
+  }
   updateScoreDisplay(qs);
 }
 
@@ -190,10 +273,11 @@ function quickMix(){
   all=all.slice(0,20);
 
   // Temporarily store as a virtual topic
-  window.PSC_QUESTIONS._quickmix=all.map(q=>({q:q.q,o:q.o,a:q.a,e:q.e}));
+  window.PSC_QUESTIONS._quickmix=all;
   quizState={topicId:'_quickmix',answered:{}};
 
   $('#quiz-title').textContent='⚡ Quick Mix (20 random)';
+  $('#btn-reset-topic').style.display='none';
   $('#score-correct').textContent='0';
   $('#score-total').textContent='0';
   $('#quiz-summary').textContent='';
@@ -259,6 +343,21 @@ function init(){
 
   // Quick mix
   $('#btn-quick-mix').addEventListener('click',quickMix);
+
+  // Reset Individual Topic
+  const btnResetTopic = $('#btn-reset-topic');
+  if(btnResetTopic) {
+    btnResetTopic.addEventListener('click', () => {
+      if(quizState.topicId && quizState.topicId !== '_quickmix') {
+        if(confirm('Are you sure you want to reset your progress for this topic?')) {
+          const p = getProgress();
+          delete p[quizState.topicId];
+          saveProgress(p);
+          openQuiz(quizState.topicId);
+        }
+      }
+    });
+  }
 
   // Shuffle Quiz
   const btnShuffle = $('#btn-shuffle-quiz');
