@@ -15,12 +15,19 @@ const TOPICS=[
   {id:"parts_of_speech",name:"Parts of Speech",icon:"🧩",cat:"grammar"},
   {id:"gerunds_infinitives",name:"Gerunds & Infinitives",icon:"🔗",cat:"grammar"},
   {id:"correlatives",name:"Correlatives",icon:"⚖️",cat:"grammar"},
+  {id:"types_of_sentences",name:"Types of Sentences",icon:"🔁",cat:"grammar"},
+  {id:"auxiliary_verbs",name:"Auxiliary Verbs",icon:"🔑",cat:"grammar"},
   {id:"synonyms_antonyms",name:"Synonyms & Antonyms",icon:"🔤",cat:"vocabulary"},
   {id:"one_word_substitutions",name:"One Word Substitutions",icon:"1️⃣",cat:"vocabulary"},
   {id:"idioms_phrases",name:"Idioms & Phrases",icon:"💎",cat:"vocabulary"},
   {id:"phrasal_verbs",name:"Phrasal Verbs",icon:"🚀",cat:"vocabulary"},
   {id:"spelling",name:"Spelling",icon:"🔡",cat:"vocabulary"},
-  {id:"confusing_words",name:"Confusing Words",icon:"🔀",cat:"vocabulary"}
+  {id:"confusing_words",name:"Confusing Words",icon:"🔀",cat:"vocabulary"},
+  {id:"nouns_gender_plural",name:"Nouns, Gender & Plural",icon:"👥",cat:"vocabulary"},
+  {id:"word_formation",name:"Word Formation",icon:"🏗️",cat:"vocabulary"},
+  {id:"compound_words",name:"Compound Words",icon:"🔗",cat:"vocabulary"},
+  {id:"foreign_words",name:"Foreign Words",icon:"🌍",cat:"vocabulary"},
+  {id:"abbreviations",name:"Abbreviations",icon:"🔠",cat:"vocabulary"}
 ];
 const LABELS=["A","B","C","D"];
 
