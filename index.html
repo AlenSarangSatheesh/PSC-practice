@@ -9,6 +9,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script>
+      // Apply saved theme immediately to avoid flash
+      (function(){
+        var t = localStorage.getItem('psc_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
 </head>
 <body>
     <div id="app">
@@ -17,6 +24,7 @@
         <section id="screen-landing" class="screen active">
             <header class="top-bar">
                 <h1>📝 Kerala PSC Practice</h1>
+                <button class="theme-toggle" id="theme-toggle-landing" title="Toggle Light/Dark Mode">🌙</button>
             </header>
             <div class="container">
                 <h2 class="page-title">Choose a Subject</h2>
@@ -38,6 +46,7 @@
                 <button class="back-link" id="btn-back-landing">← Back</button>
                 <h1>📘 English Topics</h1>
                 <button class="btn btn-sm" id="btn-quick-mix">⚡ Quick Mix</button>
+                <button class="theme-toggle" id="theme-toggle-topics" title="Toggle Light/Dark Mode">🌙</button>
             </header>
             <div class="container">
                 <div class="filter-row">
@@ -62,6 +71,7 @@
                     <span class="score-total" id="score-total">0</span>
                     <span class="score-label">answered</span>
                 </div>
+                <button class="theme-toggle" id="theme-toggle-quiz" title="Toggle Light/Dark Mode">🌙</button>
             </header>
             <div class="container quiz-container">
                 <div id="quiz-list"></div>
