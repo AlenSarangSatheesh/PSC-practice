@@ -346,8 +346,9 @@ function init(){
   $('#btn-back-textbooks').addEventListener('click',()=>{show('#screen-landing')});
 
   // Textbook sub-options
-  $('#tb-scert-textbooks').addEventListener('click',()=>{alert('SCERT Text Books — Coming Soon!');});
-  $('#tb-scert-manual').addEventListener('click',()=>{alert('SCERT Teachers Manual — Coming Soon!');});
+  $('#tb-scert-malayalam').addEventListener('click',()=>{alert('SCERT Malayalam Medium — Coming Soon!');});
+  $('#tb-scert-english').addEventListener('click',()=>{alert('SCERT English Medium — Coming Soon!');});
+  $('#tb-scert-manual').addEventListener('click',()=>{alert('Teachers Manual — Coming Soon!');});
 
     // Topic filters
   $$('.filter-btn').forEach(btn=>{
