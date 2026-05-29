@@ -165,7 +165,7 @@ window.SCERT_TEXTBOOKS = {
         name: "Social Science",
         icon: "🌍",
         parts: [
-          { label: "Part 1", url: "https://samagra.kite.kerala.gov.in/files/samagra-resource/uploads2/tbookscmq/PARTI/STD7/14_Social%20Science-7%20(E)%20Vol-1.pdf" },
+          { label: "Part 1", url: "https://samagra.kite.kerala.gov.in/#/textbook/page" },
           { label: "Part 2", url: "https://samagra.kite.kerala.gov.in/files/samagra-resource/uploads2/tbookscmq/PARTII/STD7/14_Social%20Science-7%20(E)%20Vol-2.pdf" }
         ]
       },
