@@ -341,6 +341,14 @@ function init(){
   $('#subject-english').addEventListener('click',()=>{renderTopics('all');show('#screen-topics')});
   $('#btn-back-landing').addEventListener('click',()=>{updateLanding();show('#screen-landing')});
 
+  // Landing → Textbooks
+  $('#subject-textbooks').addEventListener('click',()=>{show('#screen-textbooks')});
+  $('#btn-back-textbooks').addEventListener('click',()=>{show('#screen-landing')});
+
+  // Textbook sub-options
+  $('#tb-scert-textbooks').addEventListener('click',()=>{alert('SCERT Text Books — Coming Soon!');});
+  $('#tb-scert-manual').addEventListener('click',()=>{alert('SCERT Teachers Manual — Coming Soon!');});
+
     // Topic filters
   $$('.filter-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
