@@ -383,9 +383,16 @@ function init(){
       const card = document.createElement('a');
       card.className = 'subject-grid-card';
       card.href = sub.url;
-      card.target = '_blank';
-      card.rel = 'noopener noreferrer';
-      card.innerHTML = `<span class="sg-icon">${sub.icon}</span><span class="sg-name">${sub.name}</span><span class="sg-dl">📥 Open</span>`;
+      
+      // If the URL ends with .pdf, we add the download attribute to force download instead of opening in browser
+      if (sub.url.toLowerCase().endsWith('.pdf') || sub.url.includes('drive.google.com')) {
+        card.setAttribute('download', '');
+        card.innerHTML = `<span class="sg-icon">${sub.icon}</span><span class="sg-name">${sub.name}</span><span class="sg-dl">📥 Download</span>`;
+      } else {
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+        card.innerHTML = `<span class="sg-icon">${sub.icon}</span><span class="sg-name">${sub.name}</span><span class="sg-dl">📥 Open Portal</span>`;
+      }
       grid.appendChild(card);
     });
 

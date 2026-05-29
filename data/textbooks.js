@@ -161,7 +161,7 @@ window.SCERT_TEXTBOOKS = {
       {name:"English", icon:"📘", url:"https://samagra.kite.kerala.gov.in/#/textbook/page"},
       {name:"Mathematics", icon:"🔢", url:"https://samagra.kite.kerala.gov.in/#/textbook/page"},
       {name:"Basic Science", icon:"🔬", url:"https://samagra.kite.kerala.gov.in/#/textbook/page"},
-      {name:"Social Science", icon:"🌍", url:"https://samagra.kite.kerala.gov.in/#/textbook/page"},
+      {name:"Social Science", icon:"🌍", url:"https://samagra.kite.kerala.gov.in/files/samagra-resource/uploads2/tbookscmq/PARTII/STD7/14_Social%20Science-7%20(E)%20Vol-2.pdf"},
       {name:"Hindi", icon:"📕", url:"https://samagra.kite.kerala.gov.in/#/textbook/page"},
       {name:"ICT", icon:"💻", url:"https://samagra.kite.kerala.gov.in/#/textbook/page"}
     ],
