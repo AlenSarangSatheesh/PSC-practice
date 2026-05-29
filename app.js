@@ -380,19 +380,34 @@ function init(){
     }
 
     subjects.forEach(sub => {
-      const card = document.createElement('a');
+      const card = document.createElement('div');
       card.className = 'subject-grid-card';
-      card.href = sub.url;
       
-      // If the URL ends with .pdf, we add the download attribute to force download instead of opening in browser
-      if (sub.url.toLowerCase().endsWith('.pdf') || sub.url.includes('drive.google.com')) {
-        card.setAttribute('download', '');
-        card.innerHTML = `<span class="sg-icon">${sub.icon}</span><span class="sg-name">${sub.name}</span><span class="sg-dl">📥 Download</span>`;
-      } else {
-        card.target = '_blank';
-        card.rel = 'noopener noreferrer';
-        card.innerHTML = `<span class="sg-icon">${sub.icon}</span><span class="sg-name">${sub.name}</span><span class="sg-dl">📥 Open Portal</span>`;
+      let linksHTML = '';
+      
+      // Helper function to generate link HTML
+      const createLink = (url, label) => {
+        let isDirect = url.toLowerCase().endsWith('.pdf') || url.includes('drive.google.com');
+        let attrs = isDirect ? `download=""` : `target="_blank" rel="noopener noreferrer"`;
+        let icon = isDirect ? `📥` : `🔗`;
+        return `<a href="${url}" class="sg-dl" ${attrs}>${icon} ${label}</a>`;
+      };
+
+      if (sub.parts && sub.parts.length > 0) {
+        sub.parts.forEach(part => {
+          linksHTML += createLink(part.url, part.label);
+        });
+      } else if (sub.url) {
+        let isDirect = sub.url.toLowerCase().endsWith('.pdf') || sub.url.includes('drive.google.com');
+        let label = isDirect ? 'Download' : 'Open Portal';
+        linksHTML += createLink(sub.url, label);
       }
+
+      card.innerHTML = `
+        <span class="sg-icon">${sub.icon}</span>
+        <span class="sg-name">${sub.name}</span>
+        <div class="sg-links">${linksHTML}</div>
+      `;
       grid.appendChild(card);
     });
 
