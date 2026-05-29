@@ -132,6 +132,13 @@ button{cursor:pointer;font-family:inherit;border:none;outline:none}
 .quiz-footer{text-align:center;padding:1.5rem 0}
 .quiz-summary{margin-top:1rem;font-size:.85rem;color:var(--text2)}
 
+/* ===== CLASS GRID ===== */
+.class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;margin-top:.5rem}
+.class-card{display:flex;align-items:center;gap:.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem 1.2rem;cursor:pointer;transition:border-color .15s,background .3s,transform .15s}
+.class-card:hover{border-color:var(--blue);transform:translateY(-2px)}
+.class-card .class-num{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--blue);color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0}
+.class-card .class-label{font-size:.88rem;font-weight:600;color:var(--text)}
+
 /* ===== RESPONSIVE ===== */
 @media(max-width:600px){
   .topic-grid{grid-template-columns:1fr}

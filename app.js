@@ -345,10 +345,25 @@ function init(){
   $('#subject-textbooks').addEventListener('click',()=>{show('#screen-textbooks')});
   $('#btn-back-textbooks').addEventListener('click',()=>{show('#screen-landing')});
 
-  // Textbook sub-options
-  $('#tb-scert-malayalam').addEventListener('click',()=>{alert('SCERT Malayalam Medium — Coming Soon!');});
-  $('#tb-scert-english').addEventListener('click',()=>{alert('SCERT English Medium — Coming Soon!');});
-  $('#tb-scert-manual').addEventListener('click',()=>{alert('Teachers Manual — Coming Soon!');});
+  // Textbook sub-options → Class list
+  function openClassList(categoryName, categoryIcon) {
+    $('#classes-title').textContent = categoryIcon + ' ' + categoryName;
+    const grid = $('#class-grid');
+    grid.innerHTML = '';
+    for (let i = 1; i <= 12; i++) {
+      const card = document.createElement('div');
+      card.className = 'class-card';
+      card.innerHTML = `<span class="class-num">${i}</span><span class="class-label">Class ${i}</span>`;
+      card.addEventListener('click', () => { alert(categoryName + ' — Class ' + i + ' — Coming Soon!'); });
+      grid.appendChild(card);
+    }
+    show('#screen-classes');
+  }
+
+  $('#tb-scert-malayalam').addEventListener('click', () => openClassList('SCERT Malayalam Medium', '📖'));
+  $('#tb-scert-english').addEventListener('click', () => openClassList('SCERT English Medium', '📘'));
+  $('#tb-scert-manual').addEventListener('click', () => openClassList('Teachers Manual', '📝'));
+  $('#btn-back-classes').addEventListener('click', () => show('#screen-textbooks'));
 
     // Topic filters
   $$('.filter-btn').forEach(btn=>{
