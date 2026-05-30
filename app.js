@@ -34,7 +34,16 @@ const LABELS=["A","B","C","D"];
 /* --- Helpers --- */
 const $=s=>document.querySelector(s);
 const $$=s=>document.querySelectorAll(s);
-function show(id){$$('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0)}
+function show(id, pushHistory = true) {
+  $$('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0,0);
+  if (pushHistory) {
+    if (!history.state || history.state.id !== id) {
+      history.pushState({ id: id }, "", "");
+    }
+  }
+}
 function getQ(id){return(window.PSC_QUESTIONS&&window.PSC_QUESTIONS[id])||[]}
 
 function getWrongReason(topic, opt, rule) {
@@ -337,6 +346,17 @@ function init(){
   initThemeToggle();
   updateLanding();
 
+  if (!history.state) {
+    history.replaceState({ id: '#screen-landing' }, "", "");
+  }
+  window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.id) {
+      show(e.state.id, false);
+    } else {
+      show('#screen-landing', false);
+    }
+  });
+
   // Landing → Topics
   $('#subject-english').addEventListener('click',()=>{renderTopics('all');show('#screen-topics')});
   $('#btn-back-landing').addEventListener('click',()=>{updateLanding();show('#screen-landing')});
@@ -418,6 +438,7 @@ function init(){
   $('#tb-scert-malayalam').addEventListener('click', () => openClassList('malayalam', 'SCERT Malayalam Medium', '📖'));
   $('#tb-scert-english').addEventListener('click', () => openClassList('english', 'SCERT English Medium', '📘'));
   $('#tb-scert-manual').addEventListener('click', () => openClassList('manual', 'Teachers Manual', '📝'));
+  $('#tb-pscpdfbanks').addEventListener('click', () => openClassList('pscpdfbanks', 'PSC PDF Banks', '🌐'));
   $('#btn-back-textbooks').addEventListener('click', () => show('#screen-landing'));
   $('#btn-back-classes').addEventListener('click', () => show('#screen-textbooks'));
   $('#btn-back-subjects').addEventListener('click', () => show('#screen-classes'));
