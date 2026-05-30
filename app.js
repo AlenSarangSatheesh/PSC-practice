@@ -438,7 +438,7 @@ function init(){
   $('#tb-scert-malayalam').addEventListener('click', () => openClassList('malayalam', 'SCERT Malayalam Medium', '📖'));
   $('#tb-scert-english').addEventListener('click', () => openClassList('english', 'SCERT English Medium', '📘'));
   $('#tb-scert-manual').addEventListener('click', () => openClassList('manual', 'Teachers Manual', '📝'));
-  $('#tb-pscpdfbanks').addEventListener('click', () => openClassList('pscpdfbanks', 'PSC PDF Banks', '🌐'));
+
   $('#btn-back-textbooks').addEventListener('click', () => history.back());
   $('#btn-back-classes').addEventListener('click', () => history.back());
   $('#btn-back-subjects').addEventListener('click', () => history.back());
