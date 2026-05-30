@@ -359,7 +359,7 @@ function init(){
 
   // Landing → Topics
   $('#subject-english').addEventListener('click',()=>{renderTopics('all');show('#screen-topics')});
-  $('#btn-back-landing').addEventListener('click',()=>{updateLanding();show('#screen-landing')});
+  $('#btn-back-landing').addEventListener('click',()=>{updateLanding();history.back()});
 
   // Landing → Textbooks → Subjects flow
   let currentCategory = null; // 'malayalam', 'english', or 'manual'
@@ -439,9 +439,9 @@ function init(){
   $('#tb-scert-english').addEventListener('click', () => openClassList('english', 'SCERT English Medium', '📘'));
   $('#tb-scert-manual').addEventListener('click', () => openClassList('manual', 'Teachers Manual', '📝'));
   $('#tb-pscpdfbanks').addEventListener('click', () => openClassList('pscpdfbanks', 'PSC PDF Banks', '🌐'));
-  $('#btn-back-textbooks').addEventListener('click', () => show('#screen-landing'));
-  $('#btn-back-classes').addEventListener('click', () => show('#screen-textbooks'));
-  $('#btn-back-subjects').addEventListener('click', () => show('#screen-classes'));
+  $('#btn-back-textbooks').addEventListener('click', () => history.back());
+  $('#btn-back-classes').addEventListener('click', () => history.back());
+  $('#btn-back-subjects').addEventListener('click', () => history.back());
 
     // Topic filters
   $$('.filter-btn').forEach(btn=>{
@@ -466,7 +466,7 @@ function init(){
   }
 
   // Quiz back
-  $('#btn-back-topics').addEventListener('click',()=>{renderTopics('all');show('#screen-topics')});
+  $('#btn-back-topics').addEventListener('click',()=>{renderTopics('all');history.back()});
   $('#btn-scroll-top').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
 
   // Quick mix
