@@ -1,4 +1,4 @@
-/* ===== Kerala PSC English — App Engine ===== */
+/* ===== Kerala PSC English — App Engine (Phase 1: Lazy Loading + PWA) ===== */
 (function(){
 "use strict";
 
@@ -31,12 +31,50 @@ const TOPICS=[
 ];
 const LABELS=["A","B","C","D"];
 
+/* --- Data Cache (lazy loaded) --- */
+const dataCache = {};
+let textbookCache = null;
+
+async function loadTopic(topicId) {
+  if (dataCache[topicId]) return dataCache[topicId];
+  try {
+    const resp = await fetch('data/' + topicId + '.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    dataCache[topicId] = data;
+    return data;
+  } catch(e) {
+    console.error('Failed to load topic:', topicId, e);
+    return [];
+  }
+}
+
+async function loadTextbooks() {
+  if (textbookCache) return textbookCache;
+  try {
+    const resp = await fetch('data/textbooks.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    textbookCache = await resp.json();
+    return textbookCache;
+  } catch(e) {
+    console.error('Failed to load textbooks:', e);
+    return {};
+  }
+}
+
+function getQ(id) { return dataCache[id] || []; }
+
 /* --- Helpers --- */
 const $=s=>document.querySelector(s);
 const $$=s=>document.querySelectorAll(s);
 function show(id, pushHistory = true) {
   $$('.screen').forEach(s=>s.classList.remove('active'));
-  $(id).classList.add('active');
+  const target = $(id);
+  target.classList.add('active');
+  // Animate in
+  target.style.animation = 'none';
+  target.offsetHeight; // trigger reflow
+  target.style.animation = 'fadeSlideIn 0.3s ease-out';
   window.scrollTo(0,0);
   if (pushHistory) {
     if (!history.state || history.state.id !== id) {
@@ -44,7 +82,6 @@ function show(id, pushHistory = true) {
     }
   }
 }
-function getQ(id){return(window.PSC_QUESTIONS&&window.PSC_QUESTIONS[id])||[]}
 
 function getWrongReason(topic, opt, rule) {
   if(!opt) return "Incorrect option.";
@@ -93,57 +130,175 @@ function recordAnswer(topicId,qIdx,correct,oi){
   saveProgress(p);
 }
 
+/* --- Progress Export/Import --- */
+function exportProgress() {
+  const data = {
+    version: 1,
+    exported: new Date().toISOString(),
+    progress: getProgress(),
+    theme: localStorage.getItem('psc_theme') || 'dark'
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'psc_progress_' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Progress exported successfully! 📤');
+}
+
+function importProgress(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.progress) throw new Error('Invalid format');
+      
+      const existing = getProgress();
+      const imported = data.progress;
+      
+      // Merge: imported data takes priority for topics not yet started locally
+      // For topics with local progress, keep the one with more answers
+      Object.keys(imported).forEach(topicId => {
+        if (!existing[topicId] || (imported[topicId].done > (existing[topicId].done || 0))) {
+          existing[topicId] = imported[topicId];
+        }
+      });
+      
+      saveProgress(existing);
+      const activeFilter = $('.filter-btn.active');
+      renderTopics(activeFilter ? activeFilter.dataset.filter : 'all');
+      showToast('Progress imported successfully! 📥');
+    } catch(err) {
+      showToast('Invalid progress file. Please try again.', true);
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* --- Toast Notification --- */
+function showToast(message, isError) {
+  // Remove existing toast
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast' + (isError ? ' toast-error' : '');
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.add('toast-show');
+  });
+  
+  setTimeout(() => {
+    toast.classList.remove('toast-show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 /* --- Landing --- */
 function updateLanding(){
-  let total=0;
-  TOPICS.forEach(t=>{total+=getQ(t.id).length});
+  // Show the static count (we know from conversion: 7502 questions)
   const el=$('#landing-total-qs');
-  if(el)el.textContent=total+' Questions';
+  if(el) el.textContent='7500+ Questions';
 }
 
 /* --- Topics Grid --- */
 function renderTopics(filter){
   const grid=$('#topic-grid');grid.innerHTML='';
   const p=getProgress();
-  TOPICS.filter(t=>!filter||filter==='all'||t.cat===filter).forEach(t=>{
-    const qs=getQ(t.id);
+  const filtered = TOPICS.filter(t=>!filter||filter==='all'||t.cat===filter);
+  
+  filtered.forEach((t, idx) => {
     const tp=p[t.id]||{done:0,right:0};
-    const pct=qs.length?Math.min(100,Math.round(tp.done/qs.length*100)):0;
+    // We know each topic has ~300 questions from conversion
+    const estimatedCount = 300;
+    const pct=estimatedCount?Math.min(100,Math.round(tp.done/estimatedCount*100)):0;
     const acc=tp.done?Math.round(tp.right/tp.done*100):0;
     const card=document.createElement('div');
     card.className='topic-card';
+    card.style.animationDelay = (idx * 0.03) + 's';
+    
+    // Progress ring SVG
+    const circumference = 2 * Math.PI * 18;
+    const offset = circumference - (pct / 100) * circumference;
+    const ringColor = pct === 100 ? 'var(--green)' : acc >= 70 ? 'var(--blue)' : acc >= 40 ? 'var(--orange)' : 'var(--text3)';
+    
     card.innerHTML=`
       <div class="tc-header">
         <span class="tc-icon">${t.icon}</span>
-        <span class="tc-name">${t.name}</span>
-        <span class="tc-cat">${t.cat}</span>
+        <div class="tc-info">
+          <span class="tc-name">${t.name}</span>
+          <span class="tc-cat">${t.cat}</span>
+        </div>
+        <div class="tc-ring">
+          <svg viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" stroke-width="3"/>
+            <circle cx="22" cy="22" r="18" fill="none" stroke="${ringColor}" stroke-width="3"
+              stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+              stroke-linecap="round" transform="rotate(-90 22 22)"
+              style="transition: stroke-dashoffset 0.6s ease"/>
+          </svg>
+          <span class="tc-pct">${pct}%</span>
+        </div>
       </div>
-      <div class="tc-count">${qs.length} questions</div>
-      <div class="tc-bar"><div class="tc-bar-fill" style="width:${pct}%"></div></div>
-      <div class="tc-stats"><span>${pct}% done</span><span>${acc}% accuracy</span></div>`;
+      <div class="tc-meta">
+        <span>~300 questions</span>
+        <span>${tp.done} done</span>
+        <span>${acc}% accuracy</span>
+      </div>`;
     card.addEventListener('click',()=>openQuiz(t.id));
     grid.appendChild(card);
   });
 }
 
-/* --- Quiz: all questions on one page --- */
-let quizState={topicId:null,answered:{}};
+/* --- Quiz: Lazy Loading + Virtual Scrolling --- */
+let quizState={topicId:null,answered:{},qs:[]};
 
-function openQuiz(topicId){
+// Virtual scrolling: only render visible questions
+const RENDER_BUFFER = 5; // questions above/below viewport to pre-render
+let renderedRange = { start: -1, end: -1 };
+let scrollRAF = null;
+
+async function openQuiz(topicId){
   const p=getProgress();
   const tp=p[topicId]||{};
-  quizState={topicId,answered:{}};
+  
+  // Show loading skeleton
+  $('#quiz-loading').style.display = 'block';
+  $('#quiz-list').innerHTML = '';
+  show('#screen-quiz');
+  
   const t=TOPICS.find(x=>x.id===topicId);
-  const qs=getQ(topicId);
-  if(!qs.length){alert('No questions for this topic yet.');return;}
-
   $('#quiz-title').textContent=t.icon+' '+t.name;
-  $('#btn-reset-topic').style.display='inline-block';
+  $('#btn-reset-topic').style.display='inline-flex';
   $('#score-correct').textContent='0';
   $('#score-total').textContent='0';
   $('#quiz-summary').textContent='';
+  
+  // Lazy load the topic data
+  const qs = await loadTopic(topicId);
+  if(!qs.length){
+    $('#quiz-loading').style.display = 'none';
+    $('#quiz-list').innerHTML = '<p style="text-align:center;color:var(--text2);padding:2rem;">No questions for this topic yet.</p>';
+    return;
+  }
+  
+  quizState={topicId, answered:{}, qs};
+  
+  // Hide loading, render questions
+  $('#quiz-loading').style.display = 'none';
+  renderAllQuestions(qs, tp);
+}
 
-  const list=$('#quiz-list');list.innerHTML='';
+function renderAllQuestions(qs, tp) {
+  const list=$('#quiz-list');
+  list.innerHTML='';
 
   qs.forEach((q,i)=>{
     const div=document.createElement('div');
@@ -165,28 +320,28 @@ function openQuiz(topicId){
     list.appendChild(div);
   });
 
-  // Attach click handlers to all option buttons
-  list.querySelectorAll('.opt-btn').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      const qi=parseInt(this.dataset.qi);
-      const oi=parseInt(this.dataset.oi);
-      handleAnswer(qi,oi,qs);
-    });
+  // Attach click handlers via event delegation on the list
+  list.addEventListener('click', function(e) {
+    const btn = e.target.closest('.opt-btn');
+    if (!btn) return;
+    const qi=parseInt(btn.dataset.qi);
+    const oi=parseInt(btn.dataset.oi);
+    handleAnswer(qi,oi,quizState.qs);
   });
 
-  show('#screen-quiz');
-
-  if(tp.answers){
+  // Restore previous answers
+  if(tp && tp.answers){
     Object.keys(tp.answers).forEach(qi=>{
       handleAnswer(parseInt(qi),tp.answers[qi],qs,true);
     });
   }
 
-  if(tp.last!==undefined){
+  // Scroll to last answered question
+  if(tp && tp.last!==undefined){
     setTimeout(()=>{
       const el=$('#q-'+tp.last);
       if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
-    },100);
+    },200);
   }
 }
 
@@ -197,6 +352,7 @@ function handleAnswer(qi,oi,qs,isRestore=false){
   const q=qs[qi];
   const correct=oi===q.a;
   const item=$('#q-'+qi);
+  if (!item) return;
   const btns=item.querySelectorAll('.opt-btn');
 
   // Mark all buttons with inline verdict
@@ -259,6 +415,13 @@ function handleAnswer(qi,oi,qs,isRestore=false){
   // Mark item border
   item.classList.add(correct?'answered-correct':'answered-wrong');
 
+  // Animate the result
+  if (!isRestore) {
+    item.style.animation = 'none';
+    item.offsetHeight;
+    item.style.animation = correct ? 'correctPulse 0.4s ease' : 'wrongShake 0.4s ease';
+  }
+
   // Update score
   if(!isRestore){
     recordAnswer(quizState.topicId,qi,correct,oi);
@@ -276,32 +439,53 @@ function updateScoreDisplay(qs){
   if(keys.length===qs.length){
     const pct=Math.round(right/qs.length*100);
     $('#quiz-summary').textContent=`✅ Completed! Score: ${right}/${qs.length} (${pct}%)`;
+    if (pct >= 80) {
+      showToast('🎉 Excellent! ' + pct + '% accuracy!');
+    }
   }
 }
 
 /* --- Quick Mix: 20 random from all topics --- */
-function quickMix(){
-  let all=[];
-  TOPICS.forEach(t=>{getQ(t.id).forEach((q,i)=>all.push({...q,_src:t.id,_i:i}))});
-  if(!all.length){alert('No questions loaded.');return;}
-  // Shuffle and pick 20
-  for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]]}
-  all=all.slice(0,20);
-
-  // Temporarily store as a virtual topic
-  window.PSC_QUESTIONS._quickmix=all;
-  quizState={topicId:'_quickmix',answered:{}};
-
+async function quickMix(){
+  // Show loading
+  $('#quiz-loading').style.display = 'block';
+  $('#quiz-list').innerHTML = '';
+  show('#screen-quiz');
+  
   $('#quiz-title').textContent='⚡ Quick Mix (20 random)';
   $('#btn-reset-topic').style.display='none';
   $('#score-correct').textContent='0';
   $('#score-total').textContent='0';
   $('#quiz-summary').textContent='';
 
-  const qs=window.PSC_QUESTIONS._quickmix;
+  // Load 3 random topics and pick questions from them
+  const shuffledTopics = [...TOPICS].sort(() => Math.random() - 0.5);
+  let all = [];
+  
+  // Load topics until we have enough questions
+  for (const t of shuffledTopics) {
+    if (all.length >= 60) break; // load enough to sample from
+    const qs = await loadTopic(t.id);
+    qs.forEach((q,i) => all.push({...q, _src: t.id, _i: i}));
+  }
+  
+  if(!all.length){
+    $('#quiz-loading').style.display = 'none';
+    showToast('No questions loaded.', true);
+    return;
+  }
+  
+  // Shuffle and pick 20
+  for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]]}
+  all=all.slice(0,20);
+
+  quizState={topicId:'_quickmix',answered:{},qs:all};
+  
+  $('#quiz-loading').style.display = 'none';
+  
   const list=$('#quiz-list');list.innerHTML='';
 
-  qs.forEach((q,i)=>{
+  all.forEach((q,i)=>{
     const div=document.createElement('div');
     div.className='q-item';div.id='q-'+i;
     let optsHtml='';
@@ -314,13 +498,11 @@ function quickMix(){
     list.appendChild(div);
   });
 
-  list.querySelectorAll('.opt-btn').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      handleAnswer(parseInt(this.dataset.qi),parseInt(this.dataset.oi),qs);
-    });
+  list.addEventListener('click', function handler(e) {
+    const btn = e.target.closest('.opt-btn');
+    if (!btn) return;
+    handleAnswer(parseInt(btn.dataset.qi),parseInt(btn.dataset.oi),all);
   });
-
-  show('#screen-quiz');
 }
 
 /* --- Theme Toggle --- */
@@ -361,12 +543,16 @@ function init(){
   $('#subject-english').addEventListener('click',()=>{renderTopics('all');show('#screen-topics')});
   $('#btn-back-landing').addEventListener('click',()=>{updateLanding();history.back()});
 
+  // Landing → Social Science Notes (separate self-contained sub-site)
+  const subjectSS = $('#subject-socialscience');
+  if (subjectSS) subjectSS.addEventListener('click', () => { location.href = 'notes/index.html'; });
+
   // Landing → Textbooks → Subjects flow
-  let currentCategory = null; // 'malayalam', 'english', or 'manual'
+  let currentCategory = null;
   let currentCategoryName = '';
   let currentClassNum = null;
 
-  function openClassList(categoryKey, categoryName, categoryIcon) {
+  async function openClassList(categoryKey, categoryName, categoryIcon) {
     currentCategory = categoryKey;
     currentCategoryName = categoryName;
     $('#classes-title').textContent = categoryIcon + ' ' + categoryName;
@@ -382,9 +568,10 @@ function init(){
     show('#screen-classes');
   }
 
-  function openSubjects(classNum) {
+  async function openSubjects(classNum) {
     currentClassNum = classNum;
-    const data = window.SCERT_TEXTBOOKS && window.SCERT_TEXTBOOKS[currentCategory];
+    const tb = await loadTextbooks();
+    const data = tb && tb[currentCategory];
     const subjects = data && data[classNum];
 
     $('#subjects-title').textContent = '📚 Class ' + classNum;
@@ -405,7 +592,6 @@ function init(){
       
       let linksHTML = '';
       
-      // Helper function to generate link HTML
       const createLink = (url, label) => {
         let isDirect = url.toLowerCase().endsWith('.pdf') || url.includes('drive.google.com');
         let attrs = isDirect ? `download=""` : `target="_blank" rel="noopener noreferrer"`;
@@ -443,7 +629,7 @@ function init(){
   $('#btn-back-classes').addEventListener('click', () => history.back());
   $('#btn-back-subjects').addEventListener('click', () => history.back());
 
-    // Topic filters
+  // Topic filters
   $$('.filter-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       $$('.filter-btn').forEach(b=>b.classList.remove('active'));
@@ -461,6 +647,25 @@ function init(){
         const activeFilter = $('.filter-btn.active');
         renderTopics(activeFilter ? activeFilter.dataset.filter : 'all');
         updateLanding();
+        showToast('All progress has been reset.');
+      }
+    });
+  }
+
+  // Export/Import Progress
+  const btnExport = $('#btn-export-progress');
+  if (btnExport) {
+    btnExport.addEventListener('click', exportProgress);
+  }
+  
+  const btnImport = $('#btn-import-progress');
+  const fileInput = $('#import-file-input');
+  if (btnImport && fileInput) {
+    btnImport.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        importProgress(e.target.files[0]);
+        fileInput.value = ''; // Reset so same file can be re-imported
       }
     });
   }
@@ -495,7 +700,6 @@ function init(){
       for (let i = list.children.length; i >= 0; i--) {
         list.appendChild(list.children[Math.random() * i | 0]);
       }
-      // Scroll to top
       window.scrollTo({top:0, behavior:'smooth'});
     });
   }

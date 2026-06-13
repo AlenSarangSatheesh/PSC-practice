@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Find the best textbooks to download for free. Get SCERT Kerala State Syllabus study materials, Teachers Manuals, and Kerala PSC English Practice with 5700+ MCQs.">
+    <meta name="description" content="Find the best textbooks to download for free. Get SCERT Kerala State Syllabus study materials, Teachers Manuals, and Kerala PSC English Practice with 7500+ MCQs.">
     <meta name="keywords" content="textbooks to download, textbooks to downlaod, download textbooks, SCERT Kerala textbooks PDF, free textbook downloads, Kerala PSC English Practice, study materials">
+    <meta name="theme-color" content="#0f0f1a">
     <title>Textbooks to Download - SCERT Kerala & PSC English Practice</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <script>
       // Apply saved theme immediately to avoid flash
       (function(){
@@ -34,11 +37,20 @@
                     <div class="subject-body">
                         <h3>English</h3>
                         <p>Grammar &amp; Vocabulary · 25 Topics</p>
-                        <span class="subject-count" id="landing-total-qs">0 Questions</span>
+                        <span class="subject-count" id="landing-total-qs">7500+ Questions</span>
                     </div>
                     <span class="arrow">→</span>
                 </div>
-                <div class="subject-card" id="subject-textbooks">
+                <div class="subject-card" id="subject-socialscience" style="margin-top:0.75rem;">
+                    <div class="subject-icon">🌍</div>
+                    <div class="subject-body">
+                        <h3>Social Science Notes</h3>
+                        <p>SCERT Consolidated Notes · Classes 5–10</p>
+                        <span class="subject-count">110 Topics</span>
+                    </div>
+                    <span class="arrow">→</span>
+                </div>
+                <div class="subject-card" id="subject-textbooks" style="margin-top:0.75rem;">
                     <div class="subject-icon">📚</div>
                     <div class="subject-body">
                         <h3>Textbooks to Download</h3>
@@ -124,10 +136,14 @@
             </header>
             <div class="container">
                 <div class="filter-row">
-                    <button class="filter-btn active" data-filter="all">All (18)</button>
+                    <button class="filter-btn active" data-filter="all">All (25)</button>
                     <button class="filter-btn" data-filter="grammar">Grammar</button>
                     <button class="filter-btn" data-filter="vocabulary">Vocabulary</button>
-                    <button class="btn btn-sm" id="btn-reset-progress" style="margin-left:auto; background-color:#ef4444; color:white; border-color:#dc2626;">🔄 Reset Progress</button>
+                    <div class="filter-actions">
+                        <button class="btn btn-sm btn-export" id="btn-export-progress" title="Export Progress">📤 Export</button>
+                        <button class="btn btn-sm btn-import" id="btn-import-progress" title="Import Progress">📥 Import</button>
+                        <button class="btn btn-sm btn-danger" id="btn-reset-progress">🔄 Reset</button>
+                    </div>
                 </div>
                 <div class="topic-grid" id="topic-grid"></div>
             </div>
@@ -139,7 +155,7 @@
                 <button class="back-link" id="btn-back-topics">← Topics</button>
                 <h1 id="quiz-title">Articles</h1>
                 <button class="btn btn-sm" id="btn-shuffle-quiz" title="Shuffle Questions">🔀 Shuffle</button>
-                <button class="btn btn-sm" id="btn-reset-topic" title="Reset Topic Progress" style="background-color:#ef4444; color:white; border-color:#dc2626; margin-left:8px;">🔄 Reset</button>
+                <button class="btn btn-sm btn-danger" id="btn-reset-topic" title="Reset Topic Progress">🔄 Reset</button>
                 <div class="score-box">
                     <span class="score-correct" id="score-correct">0</span> /
                     <span class="score-total" id="score-total">0</span>
@@ -148,6 +164,12 @@
                 <button class="theme-toggle" id="theme-toggle-quiz" title="Toggle Light/Dark Mode">🌙</button>
             </header>
             <div class="container quiz-container">
+                <!-- Loading skeleton shown while fetching data -->
+                <div id="quiz-loading" class="quiz-loading" style="display:none;">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
                 <div id="quiz-list"></div>
                 <div class="quiz-footer">
                     <button class="btn" id="btn-scroll-top">↑ Back to Top</button>
@@ -161,32 +183,22 @@
         </footer>
     </div>
 
-    <script src="data/articles.js"></script>
-    <script src="data/prepositions.js"></script>
-    <script src="data/tenses.js"></script>
-    <script src="data/subject_verb_agreement.js"></script>
-    <script src="data/voice_change.js"></script>
-    <script src="data/reported_speech.js"></script>
-    <script src="data/question_tags.js"></script>
-    <script src="data/degrees.js"></script>
-    <script src="data/sentence_correction.js"></script>
-    <script src="data/parts_of_speech.js"></script>
-    <script src="data/gerunds_infinitives.js"></script>
-    <script src="data/correlatives.js"></script>
-    <script src="data/synonyms_antonyms.js"></script>
-    <script src="data/one_word_substitutions.js"></script>
-    <script src="data/idioms_phrases.js"></script>
-    <script src="data/phrasal_verbs.js"></script>
-    <script src="data/spelling.js"></script>
-    <script src="data/confusing_words.js"></script>
-    <script src="data/types_of_sentences.js"></script>
-    <script src="data/auxiliary_verbs.js"></script>
-    <script src="data/nouns_gender_plural.js"></script>
-    <script src="data/word_formation.js"></script>
-    <script src="data/compound_words.js"></script>
-    <script src="data/foreign_words.js"></script>
-    <script src="data/abbreviations.js"></script>
-    <script src="data/textbooks.js"></script>
+    <!-- Hidden file input for import -->
+    <input type="file" id="import-file-input" accept=".json" style="display:none">
+
     <script src="app.js"></script>
+
+    <script>
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').catch(function() {
+            // SW registration failed — likely not served from root or HTTPS
+            // Try relative path for GitHub Pages subpath
+            navigator.serviceWorker.register('./sw.js').catch(function(){});
+          });
+        });
+      }
+    </script>
 </body>
 </html>

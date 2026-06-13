@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SCERT Social Science — Study Notes</title>
+  <meta name="description" content="Consolidated SCERT Social Science study notes for Classes 5–10 (Kerala)." />
+  <meta name="theme-color" content="#0f0f1a" />
+  <script>
+    // Apply the shared PSC theme immediately to avoid a flash (default dark, matches PSC).
+    (function () {
+      var t = localStorage.getItem('psc_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/app.css" />
+  <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>📘</text></svg>" />
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <header class="topbar">
+    <a class="psc-back" href="../index.html" title="Back to PSC Practice">
+      <span aria-hidden="true">←</span><span class="psc-back-text">PSC Practice</span>
+    </a>
+    <button id="menuBtn" class="icon-btn" aria-label="Toggle navigation" title="Menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <a class="brand" href="#/" title="Home">
+      <span class="brand-mark">📘</span>
+      <span class="brand-text">
+        <strong>Social Science</strong>
+        <small>SCERT Study Notes · Classes 5–10</small>
+      </span>
+    </a>
+
+    <div class="search">
+      <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="searchInput" type="search" placeholder="Search notes…  (press /)" autocomplete="off" aria-label="Search notes" />
+      <kbd class="search-kbd">/</kbd>
+    </div>
+
+    <button id="themeBtn" class="icon-btn" aria-label="Toggle dark mode" title="Toggle theme">
+      <svg class="i-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1111.2 3a6.5 6.5 0 009.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    </button>
+  </header>
+
+  <div class="layout">
+    <aside id="sidebar" class="sidebar" aria-label="Notes navigation">
+      <nav id="nav" class="nav"></nav>
+      <footer class="sidebar-foot">
+        <span id="buildInfo"></span>
+      </footer>
+    </aside>
+    <div id="backdrop" class="backdrop" hidden></div>
+
+    <main id="content" class="content" tabindex="-1">
+      <div id="view" class="view"></div>
+    </main>
+  </div>
+
+  <div id="searchResults" class="search-results" hidden></div>
+
+  <div id="lightbox" class="lightbox" hidden>
+    <button class="lightbox-close icon-btn" aria-label="Close">✕</button>
+    <img id="lightboxImg" alt="" />
+    <p id="lightboxCap" class="lightbox-cap"></p>
+  </div>
+
+  <script src="assets/notes-data.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# Debug artifacts from the data conversion pipeline
+data/*.debug.txt
